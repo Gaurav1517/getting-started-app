@@ -1,0 +1,46 @@
+# Local blue-green simulation: two app versions sharing one MySQL database.
+#   Blue  -> http://localhost:3001
+#   Green -> http://localhost:3002
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - todo-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app-blue: &app
+    build: .
+    image: todo-app:local
+    environment: &app-env
+      MYSQL_HOST: mysql
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DB: ${MYSQL_DB}
+      APP_COLOR: blue
+      APP_VERSION: ${BLUE_VERSION}
+    ports:
+      - "3001:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  app-green:
+    <<: *app
+    environment:
+      <<: *app-env
+      APP_COLOR: green
+      APP_VERSION: ${GREEN_VERSION}
+    ports:
+      - "3002:3000"
+
+volumes:
+  todo-mysql-data:

@@ -7,6 +7,15 @@ const updateItem = require('./routes/updateItem');
 const deleteItem = require('./routes/deleteItem');
 
 app.use(express.json());
+
+// Blue-green lab: health check target for the ALB + environment info for the UI banner
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/version', (req, res) => res.json({
+    color: process.env.APP_COLOR || 'local',
+    version: process.env.APP_VERSION || 'dev',
+    host: require('os').hostname(),
+}));
+
 app.use(express.static(__dirname + '/static'));
 
 app.get('/items', getItems);

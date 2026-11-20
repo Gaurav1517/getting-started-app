@@ -11,6 +11,7 @@ const {
     MYSQL_PASSWORD_FILE: PASSWORD_FILE,
     MYSQL_DB: DB,
     MYSQL_DB_FILE: DB_FILE,
+    MYSQL_SSL: SSL,
 } = process.env;
 
 let pool;
@@ -35,6 +36,8 @@ async function init() {
         password,
         database,
         charset: 'utf8mb4',
+        // 'Amazon RDS' = mysql2's built-in RDS CA bundle (TLS with cert verification); unset for local MySQL
+        ssl: SSL || undefined,
     });
 
     return new Promise((acc, rej) => {

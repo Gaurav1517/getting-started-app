@@ -11,6 +11,14 @@
     <title>Todo App</title>
 </head>
 <body>
+    <div id="env-banner" style="position:fixed;top:0;left:0;right:0;z-index:1000;padding:12px;text-align:center;color:#fff;font:bold 15px sans-serif;background:#555">Loading environment...</div>
+    <script>
+        fetch('/api/version').then(r => r.json()).then(d => {
+            const b = document.getElementById('env-banner');
+            b.textContent = d.color.toUpperCase() + ' environment | release ' + d.version + ' | served by ' + d.host;
+            b.style.background = d.color === 'green' ? '#2e7d32' : d.color === 'blue' ? '#1565c0' : '#555';
+        });
+    </script>
     <div id="root"></div>
     <script src="js/react.production.min.js"></script>
     <script src="js/react-dom.production.min.js"></script>
