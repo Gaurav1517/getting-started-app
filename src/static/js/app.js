@@ -49,9 +49,16 @@ function TodoListCard() {
 
     if (items === null) return 'Loading...';
 
+    const remaining = items.filter(item => !item.completed).length;
+
     return (
         <React.Fragment>
             <AddItemForm onNewItem={onNewItem} />
+            {items.length > 0 && (
+                <p className="text-center text-muted">
+                    {remaining} of {items.length} items remaining
+                </p>
+            )}
             {items.length === 0 && (
                 <p className="text-center">No items yet! Add one above!</p>
             )}
