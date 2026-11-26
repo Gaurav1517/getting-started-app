@@ -1,6 +1,6 @@
 # Local blue-green simulation: two app versions sharing one MySQL database.
-#   Blue  -> http://localhost:3001
-#   Green -> http://localhost:3002
+#   Blue  -> http://localhost:3001  the released tag BLUE_VERSION, built from GitHub
+#   Green -> http://localhost:3002  the code in this folder (the next release)
 services:
   mysql:
     image: mysql:8.4
@@ -17,30 +17,40 @@ services:
       timeout: 3s
       retries: 20
 
-  app-blue: &app
-    build: .
-    image: todo-app:local
+  # Built from the git tag, like the EC2 user data does, so the banner version
+  # and the code on the page always belong to the same release.
+  app-blue:
+    build: https://github.com/Gaurav1517/getting-started-app.git#${BLUE_VERSION:-v1.0.0}
+    image: todo-app:${BLUE_VERSION:-v1.0.0}
     environment: &app-env
       MYSQL_HOST: mysql
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DB: ${MYSQL_DB}
       APP_COLOR: blue
-      APP_VERSION: ${BLUE_VERSION}
+      APP_VERSION: ${BLUE_VERSION:-v1.0.0}
     ports:
       - "3001:3000"
     depends_on:
       mysql:
         condition: service_healthy
 
+  # Built from this folder. No APP_VERSION: the app reports package.json's
+  # version, so the banner can't drift from the code being tested.
   app-green:
-    <<: *app
+    build: .
+    image: todo-app:local
     environment:
-      <<: *app-env
+      MYSQL_HOST: mysql
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DB: ${MYSQL_DB}
       APP_COLOR: green
-      APP_VERSION: ${GREEN_VERSION}
     ports:
       - "3002:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
   todo-mysql-data:
