@@ -47,9 +47,19 @@ function TodoListCard() {
         [items],
     );
 
+    const onClearCompleted = React.useCallback(() => {
+        const completed = items.filter(item => item.completed);
+        Promise.all(
+            completed.map(item =>
+                fetch(`/items/${item.id}`, { method: 'DELETE' }),
+            ),
+        ).then(() => setItems(items.filter(item => !item.completed)));
+    }, [items]);
+
     if (items === null) return 'Loading...';
 
     const remaining = items.filter(item => !item.completed).length;
+    const completedCount = items.length - remaining;
 
     return (
         <React.Fragment>
@@ -57,6 +67,15 @@ function TodoListCard() {
             {items.length > 0 && (
                 <p className="text-center text-muted">
                     {remaining} of {items.length} items remaining
+                    {completedCount > 0 && (
+                        <ReactBootstrap.Button
+                            size="sm"
+                            variant="link"
+                            onClick={onClearCompleted}
+                        >
+                            Clear completed ({completedCount})
+                        </ReactBootstrap.Button>
+                    )}
                 </p>
             )}
             {items.length === 0 && (

@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const { version: packageVersion } = require('../package.json');
 const db = require('./persistence');
 const getItems = require('./routes/getItems');
 const addItem = require('./routes/addItem');
@@ -12,7 +13,8 @@ app.use(express.json());
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.get('/api/version', (req, res) => res.json({
     color: process.env.APP_COLOR || 'local',
-    version: process.env.APP_VERSION || 'dev',
+    // AWS sets APP_VERSION to the deployed git tag; otherwise report the code's own version.
+    version: process.env.APP_VERSION || `v${packageVersion}`,
     host: require('os').hostname(),
 }));
 
